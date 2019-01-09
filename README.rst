@@ -189,3 +189,8 @@ returns if they are valid.
 You should check the result, and do what you want yourself.
 
 (For more information, you may read test2.cpp.)
+
+测试效果
+------------------------
+1 unicode 不太好
+2 对参数控制较严格，需要先定义参数，再使用

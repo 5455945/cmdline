@@ -23,6 +23,7 @@
   ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
   (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
   SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+  // https://github.com/tanakh/cmdline
 */
 
 #pragma once
@@ -36,7 +37,9 @@
 #include <typeinfo>
 #include <cstring>
 #include <algorithm>
+#ifndef _MSC_VER
 #include <cxxabi.h>
+#endif
 #include <cstdlib>
 
 namespace cmdline{
@@ -102,14 +105,24 @@ Target lexical_cast(const Source &arg)
   return lexical_cast_t<Target, Source, detail::is_same<Target, Source>::value>::cast(arg);
 }
 
+// https://blog.csdn.net/10km/article/details/50982993
 static inline std::string demangle(const std::string &name)
 {
+#ifdef _MSC_VER
+  return name; // 为MSVC编译器时直接返回name
+#elif defined(__GNUC__) 
+  // 为gcc编译器时还调用原来的代码
   int status=0;
   char *p=abi::__cxa_demangle(name.c_str(), 0, 0, &status);
   std::string ret(p);
   free(p);
   return ret;
+#else
+// 其他不支持的编译器需要自己实现这个方法
+#error unexpected c complier (msc/gcc), Need to implement this method for demangle
+#endif
 }
+
 
 template <class T>
 std::string readable_typename()
@@ -589,12 +602,16 @@ private:
   void check(int argc, bool ok){
     if ((argc==1 && !ok) || exist("help")){
       std::cerr<<usage();
+#ifndef _MSC_VER
       exit(0);
+#endif
     }
 
     if (!ok){
       std::cerr<<error()<<std::endl<<usage();
+#ifndef _MSC_VER
       exit(1);
+#endif
     }
   }
 
